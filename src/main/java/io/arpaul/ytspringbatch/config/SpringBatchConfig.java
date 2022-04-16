@@ -2,6 +2,7 @@ package io.arpaul.ytspringbatch.config;
 
 import io.arpaul.ytspringbatch.payload.User;
 import io.arpaul.ytspringbatch.payload.UserAddress;
+import io.arpaul.ytspringbatch.payload.UserState;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -29,14 +30,17 @@ public class SpringBatchConfig {
     @Primary
     public Job createJob(JobBuilderFactory jobBuilderFactory,
          StepBuilderFactory stepBuilderFactory,
-         ItemReader<User> itemReaderUser, ItemProcessor<User, User> itemProcessorUser, ItemWriter<User> itemWriterUser,
-         ItemReader<UserAddress> itemReaderUserAddress, ItemProcessor<UserAddress, UserAddress> itemProcessorUserAddress, ItemWriter<UserAddress> itemWriterUserAddress) {
+         ItemReader<User> readerUser, ItemProcessor<User, User> processorUser, ItemWriter<User> writerUser,
+         ItemReader<UserAddress> readerUserAddress, ItemProcessor<UserAddress, UserAddress> processorUserAddress, ItemWriter<UserAddress> writerUserAddress,
+         ItemProcessor<UserAddress, UserState> processorUserState, ItemWriter<UserState> writerUserState) {
 
 
         return jobBuilderFactory.get("ETL-Load")
                 .incrementer(new RunIdIncrementer())//sets up the job id
-                .start(getStep1(stepBuilderFactory, itemReaderUser, itemProcessorUser, itemWriterUser))
-                .next(getStep2(stepBuilderFactory, itemReaderUserAddress, itemProcessorUserAddress, itemWriterUserAddress))
+                .start(getStep1(stepBuilderFactory, readerUser, processorUser, writerUser))
+                .next(getStep2(stepBuilderFactory, readerUserAddress, processorUserAddress, writerUserAddress))
+                .next(getStep2(stepBuilderFactory, readerUserAddress, processorUserAddress, writerUserAddress))
+                .next(getStep3(stepBuilderFactory, readerUserAddress, processorUserState, writerUserState))
                 .build();
     }
 
@@ -58,6 +62,18 @@ public class SpringBatchConfig {
                           ItemWriter<UserAddress> itemWriter) {
         return stepBuilderFactory.get("ETL-file-load")
                 .<UserAddress, UserAddress> chunk(100)//chunks of data to be accessed each time
+                .reader(itemReader)
+                .processor(itemProcessor)
+                .writer(itemWriter)
+                .build();
+    }
+
+    private Step getStep3(StepBuilderFactory stepBuilderFactory,
+                          ItemReader<UserAddress> itemReader,
+                          ItemProcessor<UserAddress, UserState> itemProcessor,
+                          ItemWriter<UserState> itemWriter) {
+        return stepBuilderFactory.get("ETL-file-load")
+                .<UserAddress, UserState> chunk(10000)//chunks of data to be accessed each time
                 .reader(itemReader)
                 .processor(itemProcessor)
                 .writer(itemWriter)

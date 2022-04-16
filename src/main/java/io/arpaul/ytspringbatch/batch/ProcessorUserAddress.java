@@ -7,26 +7,18 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
 public class ProcessorUserAddress implements ItemProcessor<UserAddress, UserAddress> {
-
-    private  static final Map<String, String> DEPT_NAMES = new HashMap<>();
-
+    private static int count = 0;
     public ProcessorUserAddress() {
-
     }
 
     @Override
     public UserAddress process(UserAddress userAddress) throws Exception {
-
         userAddress.setTime(new Date());
-        System.out.println(String.format("User %s %s %s stays in %s",
-                userAddress.getFirst_name(),
-                userAddress.getMiddle_initial(),
-                userAddress.getLast_name(),
-                userAddress.getState()));
         return userAddress;
     }
 }

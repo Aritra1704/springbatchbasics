@@ -3,7 +3,6 @@ package io.arpaul.ytspringbatch.payload;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Date;
-
 @Entity
 public class UserAddress {
     @Id

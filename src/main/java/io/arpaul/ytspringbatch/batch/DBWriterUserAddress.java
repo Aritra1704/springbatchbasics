@@ -16,7 +16,6 @@ public class DBWriterUserAddress implements ItemWriter<UserAddress> {
 
     @Override
     public void write(List<? extends UserAddress> userAddresses) throws Exception {
-        System.out.println("Dta saved for userAddresses: " + userAddresses);
         userAddressRepository.saveAll(userAddresses);
     }
 }
